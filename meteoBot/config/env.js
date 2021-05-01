@@ -1,4 +1,6 @@
 const debug = require('debug')('app:config:env');
+const dotenv = require('dotenv');
+dotenv.config();
 
 debug('Loading environment');
 
@@ -13,6 +15,8 @@ module.exports = {
 
     DB_NAME: env('db_name') || 'meteo-bot',
 
-    PORT: env('port') || 3000
+    PORT: env('port') || 3000,
+
+    TELEGRAM_KEY: env('telegram_key') 
 
 };

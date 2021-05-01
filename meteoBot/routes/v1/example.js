@@ -1,7 +1,7 @@
 const debug = require('debug')('app:routes:v1:example');
 const express = require('express');
 
-debug('[Application]: Example route');
+debug('Example route');
 
 const router = express.Router();
 
