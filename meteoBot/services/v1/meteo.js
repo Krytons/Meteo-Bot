@@ -1,6 +1,5 @@
 const debug = require('debug')('app:services:v1:meteo');
 const User = require('../../models/user');
-const { WEATHER_KEY } = require('../../config/env');
 
 const MeteoService = {
 
@@ -35,25 +34,26 @@ const MeteoService = {
 
     obtainMeteoByLocation: (bot, ctx) => {
         debug('Executing obtainMeteoByLocation method');
-        User.findOne({ chat_id: ctx.chat_id }, (err, user) => {
-            if (err) return ("An error has occurred", 0);
-            if (!user) return ("Error: unknown user", 0);
+        User.findOne({ chat_id: ctx.chat.id }, (err, user) => {
+            if (err) {
+                //TODO: add log
+                debug("Find user error");
+                return;
+            }
+            if (!user) {
+                //TODO: add log
+                debug("User not found");
+                return;
+            };
             //Update user's location info
+            debug(ctx.message.location.longitude);
             user.coord_x = ctx.message.location.longitude;
             user.coord_y = ctx.message.location.latitude;
             user.save(function (err) {
                 if (err) {
-                    return ("An error has occurred", 0);
+                    debug("Save error");
+                    return;
                 }
-            });
-            http.get('http://api.openweathermap.org/data/2.5/weather?lat=' + user.coord_y + '&lon=' + user.coord_x + '&appid=' + WEATHER_KEY + '&units=metric', function (response) {
-                response.setEncoding('utf8');
-                response.on('data', function (data, err) {
-                    if (err) {
-                        return ("Meteo service error", 0);
-                    }
-                    return (data, 1);
-                });
             });
         });
     }

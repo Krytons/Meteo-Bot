@@ -2,6 +2,8 @@ const debug = require('debug')('app:controllers:v1:meteo');
 
 const MeteoService = require('../../services/v1/meteo');
 const MeteoParserMiddleware = require('../../midllewares/meteo_parser');
+const http = require('http');
+const { METEO_KEY } = require('../../config/env');
 
 const MeteoController = {
 
@@ -12,21 +14,34 @@ const MeteoController = {
 
     obtainMeteoByLocation: async (bot, ctx) => {
         debug('Executing obtainMeteoByLocation');
-        data, type = MeteoService.obtainMeteoByLocation(bot, ctx);
-        if (type != 0) {
-            //Correct meteo answer
-            var weather, temp, humidity = MeteoParserMiddleware.parseFullMeteo(data);
-            return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \nCurrent weather: ${weather} \nCurrent temperature: ${temp} \nCurrent humidity: ${humidity}`, {
-            });
-        }
-        else {
-            //Error: reset bot chat
-            return bot.telegram.sendMessage(ctx.chat.id, data, {
-                reply_markup: {
-                    remove_keyboard: true
+        //Step 1: call meteo api
+        http.get('http://api.openweathermap.org/data/2.5/weather?lat=' + ctx.message.location.latitude + '&lon=' + ctx.message.location.longitude + '&appid=' + METEO_KEY + '&units=metric', function (response) {
+            response.setEncoding('utf8');
+            response.on('data', function (data, err) {
+                if (err) {
+                    return bot.telegram.sendMessage(ctx.chat.id, 'Meteo API currently unavailable', {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
                 }
+                if (JSON.parse(data).cod == 401) {
+                    return bot.telegram.sendMessage(ctx.chat.id, 'API error', {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
+                }
+                var { weather, temp, humidity } = MeteoParserMiddleware.parseFullMeteo(data);
+                return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \nCurrent weather: ${weather} \nCurrent temperature: ${temp} \nCurrent humidity: ${humidity}`, {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
             });
-        }
+        });
+        //Step 2: save user location
+        await MeteoService.obtainMeteoByLocation(bot, ctx)
     }
 };
 

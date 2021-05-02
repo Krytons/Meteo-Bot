@@ -82,8 +82,8 @@ bot.command('meteo', ctx => {
 //Location
 bot.on('location', (ctx) => {
     debug('Received location message from: ' + ctx.message.chat.id);
-    console.log(ctx.message.location);
     bot.telegram.sendMessage(ctx.chat.id, 'You granted your location info', {})
+    MeteoController.obtainMeteoByLocation(bot, ctx);
 })
 //Deny access to location
 bot.hears('Deny access', ctx => {

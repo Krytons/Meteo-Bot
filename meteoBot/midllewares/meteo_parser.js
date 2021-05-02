@@ -3,9 +3,9 @@ const MeteoParserMiddleware = {
     parseFullMeteo: (json_data) => {
         var current_data = JSON.parse(json_data);
         var weather = current_data.weather[0].description;
-        var temp = convertToCelcius(current_data.main.temp);
-        var humidity = current_data.humidity;
-        return (weather, temp, humidity);
+        var temp = current_data.main.temp;
+        var humidity = current_data.main.humidity;
+        return { weather, temp, humidity };
     }
 
 }
