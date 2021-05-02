@@ -64,7 +64,7 @@ process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 //Commands list
-bot.start((ctx) => ctx.reply('Welcome to meteo bot: this bot is currenty under developing, so please do not use it yet'))
+bot.start((ctx) => ctx.reply('Welcome to meteo bot: this bot is currently under developing, so please do not use it yet'))
 
 //Dummy command
 bot.command('hello', ctx => {

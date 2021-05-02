@@ -17,6 +17,8 @@ module.exports = {
 
     PORT: env('port') || 3000,
 
-    TELEGRAM_KEY: env('telegram_key') 
+    TELEGRAM_KEY: env('telegram_key'),
+
+    METEO_KEY: env('meteo_key')
 
 };
