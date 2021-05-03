@@ -1,3 +1,12 @@
+const images_path  = {
+    "Clear": 'images/clear_sky.png',
+    "Clouds": 'images/clouds.png',
+    "Rain": 'images/rain.jpg',
+    "Thunderstorm ": 'images/thunderstorm.jpg',
+    "Snow": 'images/snow.png',
+    "Mist": 'images/mist.png',
+};
+
 const MeteoParserMiddleware = {
 
     parseFullMeteo: (json_data) => {
@@ -5,7 +14,8 @@ const MeteoParserMiddleware = {
         var weather = current_data.weather[0].description;
         var temp = current_data.main.temp;
         var humidity = current_data.main.humidity;
-        return { weather, temp, humidity };
+        var img_url = images_path[current_data.weather[0].main];
+        return { weather, temp, humidity, img_url };
     }
 
 }

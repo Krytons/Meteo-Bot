@@ -32,7 +32,10 @@ const MeteoController = {
                         }
                     });
                 }
-                var { weather, temp, humidity } = MeteoParserMiddleware.parseFullMeteo(data);
+                var { weather, temp, humidity, img_url } = MeteoParserMiddleware.parseFullMeteo(data);
+                if (img_url != undefined) {
+                    bot.telegram.sendPhoto(ctx.chat.id, { source: img_url });
+                }
                 return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \nCurrent weather: ${weather} \nCurrent temperature: ${temp} \nCurrent humidity: ${humidity}`, {
                     reply_markup: {
                         remove_keyboard: true
