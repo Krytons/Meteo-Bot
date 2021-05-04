@@ -75,21 +75,36 @@ bot.command('hello', ctx => {
 //Meteo command
 const MeteoController = require('./controllers/v1/meteo');
 bot.command('meteo', ctx => {
-    debug('Meteo command triggered');
-    bot.telegram.sendMessage(ctx.chat.id, 'I must know your location in order to give you correct meteo info', {})
+    debug('Meteo command triggered by: ' + ctx.message.chat.id);
+    //Control if location is needed
     MeteoController.obtainLocation(bot,ctx);
 });
 //Location
 bot.on('location', (ctx) => {
     debug('Received location message from: ' + ctx.message.chat.id);
     bot.telegram.sendMessage(ctx.chat.id, '✔️ You granted your location info, please wait for meteo informations', {})
-    MeteoController.obtainMeteoByLocation(bot, ctx);
+    MeteoController.setMeteoLocation(bot, ctx);
+    //MeteoController.obtainMeteoByLocation(bot, ctx);
 })
 //Deny access to location
 bot.hears('Deny access', ctx => {
-    debug('Deny command triggered');
+    debug('Deny command triggered by: ' + ctx.message.chat.id);
     // Explicit usage
     bot.telegram.sendMessage(ctx.chat.id, '❌ You denied location access', {
+        reply_markup: {
+            remove_keyboard: true
+        }
+    })
+});
+//Actual meteo
+bot.action('current', ctx => {
+    debug('Actual meteo command triggered by: ' + ctx.from.id);
+    MeteoController.obtainMeteoByLocation(bot, ctx);
+});
+//Previous meteo
+bot.action('previous', ctx => {
+    debug('Previous meteo command triggered by: ' + ctx.from.id);
+    bot.telegram.sendMessage(ctx.chat.id, '❌ Not implemented yet', {
         reply_markup: {
             remove_keyboard: true
         }

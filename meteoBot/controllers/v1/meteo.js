@@ -1,9 +1,7 @@
 ﻿const debug = require('debug')('app:controllers:v1:meteo');
 
 const MeteoService = require('../../services/v1/meteo');
-const MeteoParserMiddleware = require('../../midllewares/meteo_parser');
-const http = require('http');
-const { METEO_KEY } = require('../../config/env');
+
 
 const MeteoController = {
 
@@ -12,6 +10,17 @@ const MeteoController = {
         return MeteoService.obtainLocation(bot, ctx);
     },
 
+    setMeteoLocation: async (bot, ctx) => {
+        debug('Executing setMeteoLocation');
+        return MeteoService.saveUserMeteoLocation(bot, ctx);
+    },
+
+    obtainMeteoByLocation: async (bot, ctx) => {
+        debug('Executing obtainMeteoByLocation');
+        return MeteoService.obtainMeteoByLocation(bot, ctx);
+    }
+
+    /*
     obtainMeteoByLocation: async (bot, ctx) => {
         debug('Executing obtainMeteoByLocation');
         //Step 1: call meteo api
@@ -49,6 +58,7 @@ const MeteoController = {
             });
         }); 
     }
+    */
 };
 
 module.exports = MeteoController;
