@@ -1,4 +1,4 @@
-const debug = require('debug')('app:controllers:v1:meteo');
+﻿const debug = require('debug')('app:controllers:v1:meteo');
 
 const MeteoService = require('../../services/v1/meteo');
 const MeteoParserMiddleware = require('../../midllewares/meteo_parser');
@@ -32,19 +32,22 @@ const MeteoController = {
                         }
                     });
                 }
-                var { weather, temp, humidity, img_url } = MeteoParserMiddleware.parseFullMeteo(data);
+                var { weather, temp, humidity, img_url, city } = MeteoParserMiddleware.parseFullMeteo(data);
+                //Step 2: save user location
+                MeteoService.saveUserMeteoLocation(bot, ctx);
+                //Step 3: save meteo informations
+                MeteoService.saveMeteoInformations(weather, temp, humidity, city);
+                //Step 4: return a response to the user
                 if (img_url != undefined) {
                     bot.telegram.sendPhoto(ctx.chat.id, { source: img_url });
                 }
-                return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \nCurrent weather: ${weather} \nCurrent temperature: ${temp} \nCurrent humidity: ${humidity}`, {
+                return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \n🌍 Current weather: ${weather} \n🌡️ Current temperature: ${temp} \n💧 Current humidity: ${humidity}`, {
                     reply_markup: {
                         remove_keyboard: true
                     }
                 });
             });
-        });
-        //Step 2: save user location
-        await MeteoService.obtainMeteoByLocation(bot, ctx)
+        }); 
     }
 };
 

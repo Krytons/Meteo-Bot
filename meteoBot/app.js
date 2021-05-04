@@ -1,4 +1,4 @@
-var express = require('express');
+﻿var express = require('express');
 const debug = require('debug')('app');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -64,7 +64,7 @@ process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 //Commands list
-bot.start((ctx) => ctx.reply('Welcome to meteo bot: this bot is currently under developing, so please do not use it yet'))
+bot.start((ctx) => ctx.reply('Welcome to meteo bot: this bot is currently under development, so please do not use it yet'))
 
 //Dummy command
 bot.command('hello', ctx => {
@@ -82,14 +82,14 @@ bot.command('meteo', ctx => {
 //Location
 bot.on('location', (ctx) => {
     debug('Received location message from: ' + ctx.message.chat.id);
-    bot.telegram.sendMessage(ctx.chat.id, 'You granted your location info', {})
+    bot.telegram.sendMessage(ctx.chat.id, '✔️ You granted your location info, please wait for meteo informations', {})
     MeteoController.obtainMeteoByLocation(bot, ctx);
 })
 //Deny access to location
 bot.hears('Deny access', ctx => {
     debug('Deny command triggered');
     // Explicit usage
-    bot.telegram.sendMessage(ctx.chat.id, 'You denied location access', {
+    bot.telegram.sendMessage(ctx.chat.id, '❌ You denied location access', {
         reply_markup: {
             remove_keyboard: true
         }

@@ -15,7 +15,8 @@ const MeteoParserMiddleware = {
         var temp = current_data.main.temp;
         var humidity = current_data.main.humidity;
         var img_url = images_path[current_data.weather[0].main];
-        return { weather, temp, humidity, img_url };
+        var city = current_data.name;
+        return { weather, temp, humidity, img_url, city };
     }
 
 }

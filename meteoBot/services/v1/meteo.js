@@ -1,5 +1,6 @@
 const debug = require('debug')('app:services:v1:meteo');
 const User = require('../../models/user');
+const Weatherinfo = require('../../models/weatherinfo');
 
 const MeteoService = {
 
@@ -32,7 +33,7 @@ const MeteoService = {
         });
     },
 
-    obtainMeteoByLocation: (bot, ctx) => {
+    saveUserMeteoLocation: (bot, ctx) => {
         debug('Executing obtainMeteoByLocation method');
         User.findOne({ chat_id: ctx.chat.id }, (err, user) => {
             if (err) {
@@ -56,8 +57,22 @@ const MeteoService = {
                 }
             });
         });
-    }
+    },
 
+    saveMeteoInformations: (weather, temp, humidity, city) => {
+        debug('Executing saveMeteoInformations method');
+        let actualWeather = new Weatherinfo();
+        actualWeather.city = city;
+        actualWeather.temp = temp;
+        actualWeather.humidity = humidity;
+        actualWeather.weather = weather;
+        actualWeather.save((err) => {
+            if (err) {
+                debug(`ERROR: ${err}`);
+                return;
+            }
+        });
+    }
 };
 
 const requestLocationKeyboard = {
