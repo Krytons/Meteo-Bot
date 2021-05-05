@@ -134,7 +134,8 @@ const MeteoService = {
         });
     },
 
-    yesterdayMeteo: (bot, ctx) => {
+    previousMeteo: (bot, ctx, days) => {
+        debug('Executing previousMeteo method');
         let tot_temp = 0, tot_humidity = 0, tot_elements = 0;
         let weather_counter = {
             "Clear": 0,
@@ -147,7 +148,7 @@ const MeteoService = {
         let mean_weather = {
             "name": "Default",
             "value": 0
-        }
+        };
         User.findOne({ chat_id: ctx.chat.id }, (err, user) => {
             if (err) {
                 //TODO: add log
@@ -169,10 +170,13 @@ const MeteoService = {
             };
             //At this point the user exists
             debug(user.last_city);
+            var today = new Date(Date.now());
+            //Set to midnight
+            today.setHours(0, 0, 0, 0);
             Weatherinfo.find({
                 created_at: {
-                    $gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
-                    $lt: new Date(Date.now())
+                    $gte: new Date(today - (24 * days) * 60 * 60 * 1000),
+                    $lt: new Date(today)
                 },
                 city: user.last_city
             }, (err, informations) => {
@@ -194,20 +198,27 @@ const MeteoService = {
                     });
                 };
                 informations.forEach((info) => {
-                    debug(tot_temp);
                     tot_temp += info.temp;
                     tot_humidity += info.humidity;
                     weather_counter[info.weather]++;
-                    if (weather_counter[info.weather] > mean_weather.value) {
-                        mean_weather.name = info.weather;
-                        mean_weather.value = weather_counter[info.weather];
+                    debug(weather_counter[info.weather]);
+                    debug(info.weather);
+                    debug(mean_weather['value']);
+                    debug('----');
+                    if (weather_counter[info.weather] > mean_weather['value']) {
+                        mean_weather['name'] = info.weather;
+                        mean_weather['value'] = weather_counter[info.weather];
                     };
                     tot_elements++;
                 });
                 //Average values calculus
                 let mean_temp = tot_temp / tot_elements;
                 let mean_humidity = tot_humidity / tot_elements;
-                return bot.telegram.sendMessage(ctx.chat.id, `Yesterday meteo of ${user.last_city}: \n🌍 Average weather: ${mean_weather.name} \n🌡️ Average temperature: ${mean_temp.toFixed()} \n💧 Average humidity: ${mean_humidity.toFixed()}`, {
+                let name = "";
+                if (days == 1) {
+                    name = "Yesyerday";
+                } else name = "Last week";
+                return bot.telegram.sendMessage(ctx.chat.id, `${name} meteo in ${user.last_city}: \n🌍 Average weather: ${mean_weather.name} \n🌡️ Average temperature: ${mean_temp.toFixed()} \n💧 Average humidity: ${mean_humidity.toFixed()}`, {
                     reply_markup: {
                         remove_keyboard: true
                     }

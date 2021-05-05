@@ -22,7 +22,12 @@ const MeteoController = {
 
     yesterdayMeteo: async (bot, ctx) => {
         debug('Executing yesterdayMeteo');
-        return MeteoService.yesterdayMeteo(bot, ctx);
+        return MeteoService.previousMeteo(bot, ctx, 1);
+    },
+
+    lastweekMeteo: async (bot, ctx) => {
+        debug('Executing lastweekMeteo');
+        return MeteoService.previousMeteo(bot, ctx, 7);
     }
 
     

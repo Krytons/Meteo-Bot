@@ -11,7 +11,7 @@ const MeteoParserMiddleware = {
 
     parseFullMeteo: (json_data) => {
         var current_data = JSON.parse(json_data);
-        var weather = current_data.weather[0].description;
+        var weather = current_data.weather[0].main;
         var temp = current_data.main.temp;
         var humidity = current_data.main.humidity;
         var img_url = images_path[current_data.weather[0].main];

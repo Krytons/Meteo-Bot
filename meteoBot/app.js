@@ -123,8 +123,8 @@ bot.action('yesterday', ctx => {
 });
 //Last week meteo
 bot.action('l_week', ctx => {
-    debug('Actual meteo command triggered by: ' + ctx.from.id);
-    MeteoController.obtainMeteoByLocation(bot, ctx);
+    debug('Last week meteo command triggered by: ' + ctx.from.id);
+    MeteoController.lastweekMeteo(bot, ctx);
 });
 
 
