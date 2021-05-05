@@ -104,12 +104,29 @@ bot.action('current', ctx => {
 //Previous meteo
 bot.action('previous', ctx => {
     debug('Previous meteo command triggered by: ' + ctx.from.id);
-    bot.telegram.sendMessage(ctx.chat.id, '❌ Not implemented yet', {
+    bot.telegram.sendMessage(ctx.chat.id, 'What kind of meteo information are you looking for?', {
         reply_markup: {
-            remove_keyboard: true
+            inline_keyboard: [
+                [
+                    { text: "Yesterday meteo", callback_data: 'yesterday' },
+                    { text: "Last week meteo", callback_data: 'l_week' }
+                ],
+
+            ]
         }
     })
 });
+//Yesterday meteo
+bot.action('yesterday', ctx => {
+    debug('Yesterday meteo command triggered by: ' + ctx.from.id);
+    MeteoController.yesterdayMeteo(bot, ctx);
+});
+//Last week meteo
+bot.action('l_week', ctx => {
+    debug('Actual meteo command triggered by: ' + ctx.from.id);
+    MeteoController.obtainMeteoByLocation(bot, ctx);
+});
+
 
 
 bot.launch();

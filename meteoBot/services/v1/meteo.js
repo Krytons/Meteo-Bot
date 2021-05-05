@@ -21,6 +21,7 @@ const MeteoService = {
                 let actualUser = new User({ chat_id: ctx.chat.id });
                 actualUser.coord_x = 0.0;
                 actualUser.coord_y = 0.0;
+                actualUser.last_city = "Default";
                 actualUser.save((err) => {
                     if (err) {
                         debug(`ERROR: ${err}`);
@@ -90,6 +91,8 @@ const MeteoService = {
                         }
                     });
                 }
+                //Obtain current city by calling open weather API
+                obtainMeteo(user, ctx, bot, 0);
                 return bot.telegram.sendMessage(ctx.chat.id, 'What kind of meteo information are you looking for?', {
                     reply_markup: {
                         inline_keyboard: [
@@ -126,41 +129,92 @@ const MeteoService = {
                     }
                 });
             };
-            //Step 1: call meteo api
-            http.get('http://api.openweathermap.org/data/2.5/weather?lat=' + user.coord_y + '&lon=' + user.coord_x + '&appid=' + METEO_KEY + '&units=metric', function (response) {
-                response.setEncoding('utf8');
-                response.on('data', function (data, err) {
-                    if (err) {
-                        return bot.telegram.sendMessage(ctx.chat.id, 'Meteo API currently unavailable', {
-                            reply_markup: {
-                                remove_keyboard: true
-                            }
-                        });
-                    };
-                    if (JSON.parse(data).cod == 401) {
-                        return bot.telegram.sendMessage(ctx.chat.id, 'API error', {
-                            reply_markup: {
-                                remove_keyboard: true
-                            }
-                        });
-                    };
-                    var { weather, temp, humidity, img_url, city } = MeteoParserMiddleware.parseFullMeteo(data);
-                    //Step 2: save meteo informations
-                    saveMeteoInformations(weather, temp, humidity, city);
-                    //Step 3: return a response to the user
-                    if (img_url != undefined) {
-                        bot.telegram.sendPhoto(ctx.chat.id, { source: img_url });
+            //Call meteo api
+            return obtainMeteo(user, ctx, bot);
+        });
+    },
+
+    yesterdayMeteo: (bot, ctx) => {
+        let tot_temp = 0, tot_humidity = 0, tot_elements = 0;
+        let weather_counter = {
+            "Clear": 0,
+            "Clouds": 0,
+            "Rain": 0,
+            "Thunderstorm ": 0,
+            "Snow": 0,
+            "Mist": 0
+        };
+        let mean_weather = {
+            "name": "Default",
+            "value": 0
+        }
+        User.findOne({ chat_id: ctx.chat.id }, (err, user) => {
+            if (err) {
+                //TODO: add log
+                debug("Find user error");
+                return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
+                    reply_markup: {
+                        remove_keyboard: true
                     }
-                    return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \n🌍 Current weather: ${weather} \n🌡️ Current temperature: ${temp} \n💧 Current humidity: ${humidity}`, {
+                });
+            };
+            if (!user) {
+                //TODO: add log
+                debug("User not found");
+                return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
+            };
+            //At this point the user exists
+            debug(user.last_city);
+            Weatherinfo.find({
+                created_at: {
+                    $gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                    $lt: new Date(Date.now())
+                },
+                city: user.last_city
+            }, (err, informations) => {
+                if (err) {
+                    debug(`ERROR: ${err}`);
+                    return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
                         reply_markup: {
                             remove_keyboard: true
                         }
                     });
+                };
+                if (informations.length == 0) {
+                    //TODO: add log
+                    debug("Informations not found");
+                    return bot.telegram.sendMessage(ctx.chat.id, 'No informations for yesterday', {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
+                };
+                informations.forEach((info) => {
+                    debug(tot_temp);
+                    tot_temp += info.temp;
+                    tot_humidity += info.humidity;
+                    weather_counter[info.weather]++;
+                    if (weather_counter[info.weather] > mean_weather.value) {
+                        mean_weather.name = info.weather;
+                        mean_weather.value = weather_counter[info.weather];
+                    };
+                    tot_elements++;
+                });
+                //Average values calculus
+                let mean_temp = tot_temp / tot_elements;
+                let mean_humidity = tot_humidity / tot_elements;
+                return bot.telegram.sendMessage(ctx.chat.id, `Yesterday meteo of ${user.last_city}: \n🌍 Average weather: ${mean_weather.name} \n🌡️ Average temperature: ${mean_temp.toFixed()} \n💧 Average humidity: ${mean_humidity.toFixed()}`, {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
                 });
             });
         });
-    },
-
+    }
 };
 
 const requestLocationKeyboard = {
@@ -178,7 +232,54 @@ const requestLocationKeyboard = {
     }
 }
 
-function saveMeteoInformations(weather, temp, humidity, city){
+function obtainMeteo(user, ctx, bot, message = 1) {
+    http.get('http://api.openweathermap.org/data/2.5/weather?lat=' + user.coord_y + '&lon=' + user.coord_x + '&appid=' + METEO_KEY + '&units=metric', function (response) {
+        response.setEncoding('utf8');
+        response.on('data', function (data, err) {
+            if (err) {
+                return bot.telegram.sendMessage(ctx.chat.id, 'Meteo API currently unavailable', {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
+            };
+            if (JSON.parse(data).cod == 401) {
+                return bot.telegram.sendMessage(ctx.chat.id, 'API error', {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
+            };
+            var { weather, temp, humidity, img_url, city } = MeteoParserMiddleware.parseFullMeteo(data);
+            //Step 1: save meteo informations
+            saveMeteoInformations(weather, temp, humidity, city);
+            //Step 2: return a response to the user and update user last city
+            user.last_city = city;
+            user.save(function (err) {
+                if (err) {
+                    debug("Save error");
+                    return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
+                }
+                if (message) {
+                    if (img_url != undefined) {
+                        bot.telegram.sendPhoto(ctx.chat.id, { source: img_url });
+                    }
+                    return bot.telegram.sendMessage(ctx.chat.id, `Meteo based on your location: \n🌍 Current weather: ${weather} \n🌡️ Current temperature: ${temp} \n💧 Current humidity: ${humidity}`, {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
+                } else return;
+            });
+        });
+    });
+}
+
+function saveMeteoInformations(weather, temp, humidity, city) {
     debug('Executing saveMeteoInformations method');
     let actualWeather = new Weatherinfo();
     actualWeather.city = city;
