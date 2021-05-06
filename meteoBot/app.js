@@ -53,6 +53,9 @@ app.use(function (req, res, next) {
     res.type('txt').send('Not found');
 });
 
+//app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
+//app.use(bodyParser.json({limit: '50mb'}));
+
 // Setup telegram bot
 const Telegraf = require('telegraf');
 
@@ -126,7 +129,11 @@ bot.action('l_week', ctx => {
     debug('Last week meteo command triggered by: ' + ctx.from.id);
     MeteoController.lastweekMeteo(bot, ctx);
 });
-
+//Forecast meteo
+bot.action('forecast', ctx => {
+    debug('Forecast meteo command triggered by: ' + ctx.from.id);
+    MeteoController.forecastMeteo(bot, ctx);
+});
 
 
 bot.launch();

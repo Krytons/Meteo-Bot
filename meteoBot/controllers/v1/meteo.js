@@ -28,9 +28,13 @@ const MeteoController = {
     lastweekMeteo: async (bot, ctx) => {
         debug('Executing lastweekMeteo');
         return MeteoService.previousMeteo(bot, ctx, 7);
+    },
+
+    forecastMeteo: async (bot, ctx) => {
+        debug('Executing forecastMeteo');
+        return MeteoService.forecastMeteo(bot, ctx);
     }
 
-    
 };
 
 module.exports = MeteoController;

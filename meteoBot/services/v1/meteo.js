@@ -4,6 +4,7 @@ const Weatherinfo = require('../../models/weatherinfo');
 const MeteoParserMiddleware = require('../../midllewares/meteo_parser');
 const http = require('http');
 const { METEO_KEY } = require('../../config/env');
+const { json } = require('body-parser');
 
 const MeteoService = {
 
@@ -47,7 +48,8 @@ const MeteoService = {
                         inline_keyboard: [
                             [
                                 { text: "Current meteo", callback_data: 'current' },
-                                { text: "Previous meteo", callback_data: 'previous' }
+                                { text: "Previous meteo", callback_data: 'previous' },
+                                { text: "Forecast meteo", callback_data: 'forecast' }
                             ],
 
                         ]
@@ -98,7 +100,8 @@ const MeteoService = {
                         inline_keyboard: [
                             [
                                 { text: "Current meteo", callback_data: 'current' },
-                                { text: "Previous meteo", callback_data: 'previous' }
+                                { text: "Previous meteo", callback_data: 'previous' },
+                                { text: "Forecast meteo", callback_data: 'forecast' }
                             ],
 
                         ]
@@ -201,10 +204,6 @@ const MeteoService = {
                     tot_temp += info.temp;
                     tot_humidity += info.humidity;
                     weather_counter[info.weather]++;
-                    debug(weather_counter[info.weather]);
-                    debug(info.weather);
-                    debug(mean_weather['value']);
-                    debug('----');
                     if (weather_counter[info.weather] > mean_weather['value']) {
                         mean_weather['name'] = info.weather;
                         mean_weather['value'] = weather_counter[info.weather];
@@ -222,6 +221,69 @@ const MeteoService = {
                     reply_markup: {
                         remove_keyboard: true
                     }
+                });
+            });
+        });
+    },
+
+    forecastMeteo: (bot, ctx) => {
+        debug('Executing forecastMeteo method');
+        //Step 1: get user's coordinates
+        User.findOne({ chat_id: ctx.chat.id }, (err, user) => {
+            if (err) {
+                //TODO: add log
+                debug("Find user error");
+                return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
+            };
+            if (!user) {
+                //TODO: add log
+                debug("User not found");
+                return bot.telegram.sendMessage(ctx.chat.id, 'An internal error has occured', {
+                    reply_markup: {
+                        remove_keyboard: true
+                    }
+                });
+            };
+            //Step 2: call forecast meteo API
+            var data = [];
+            http.get('http://api.openweathermap.org/data/2.5/onecall?lat=' + user.coord_y + '&lon=' + user.coord_x + '&exclude=minutely,hourly,current&appid=' + METEO_KEY + '&units=metric', function (response) {
+                response.on('data', function (chunk) {
+                    data.push(chunk);
+                }).on('end', function (err) {
+                    if (err) {
+                        return bot.telegram.sendMessage(ctx.chat.id, 'Meteo API currently unavailable', {
+                            reply_markup: {
+                                remove_keyboard: true
+                            }
+                        });
+                    };
+                    const json_data = JSON.parse(Buffer.concat(data).toString());
+                    if (json_data.cod == 401) {
+                        return bot.telegram.sendMessage(ctx.chat.id, 'API error', {
+                            reply_markup: {
+                                remove_keyboard: true
+                            }
+                        });
+                    };
+                    //Step 3 parse data and return them
+                    bot.telegram.sendMessage(ctx.chat.id, `Forecast meteo in ${user.last_city} for this week: `, {});
+                    let d1 = `📅 Day 1: \n🌍 Average weather: ${json_data.daily[1].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[1].temp.day} \n💧 Average humidity: ${json_data.daily[1].humidity}`;
+                    let d2 = `\n\n📅 Day 2: \n🌍 Average weather: ${json_data.daily[2].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[2].temp.day} \n💧 Average humidity: ${json_data.daily[2].humidity}`;
+                    let d3 = `\n\n📅 Day 3: \n🌍 Average weather: ${json_data.daily[3].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[3].temp.day} \n💧 Average humidity: ${json_data.daily[3].humidity}`;
+                    let d4 = `\n\n📅 Day 4: \n🌍 Average weather: ${json_data.daily[4].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[4].temp.day} \n💧 Average humidity: ${json_data.daily[4].humidity}`;
+                    let d5 = `\n\n📅 Day 5: \n🌍 Average weather: ${json_data.daily[5].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[5].temp.day} \n💧 Average humidity: ${json_data.daily[5].humidity}`;
+                    let d6 = `\n\n📅 Day 6: \n🌍 Average weather: ${json_data.daily[6].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[6].temp.day} \n💧 Average humidity: ${json_data.daily[6].humidity}`;
+                    let d7 = `\n\n📅 Day 7: \n🌍 Average weather: ${json_data.daily[7].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[7].temp.day} \n💧 Average humidity: ${json_data.daily[7].humidity}`;
+                    return bot.telegram.sendMessage(ctx.chat.id, d1+d2+d3+d4+d5+d6+d7, {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    });
+
                 });
             });
         });
