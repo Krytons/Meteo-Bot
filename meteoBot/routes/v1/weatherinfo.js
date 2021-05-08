@@ -8,7 +8,7 @@ const router = express.Router();
 const WeatherinfoController = require('../../controllers/v1/weatherinfo');
 
 // Define route and it's controller
-router.route('/getAllMeteoByCity/:city').get(
+router.route('/getAllMeteoInfoByCity/:city').get(
     WeatherinfoController.getAllMeteoInfoByCity);
 
 router.route('/getAllMeteoData').get(
