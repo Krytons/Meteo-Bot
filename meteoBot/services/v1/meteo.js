@@ -271,13 +271,14 @@ const MeteoService = {
                     };
                     //Step 3 parse data and return them
                     bot.telegram.sendMessage(ctx.chat.id, `Forecast meteo in ${user.last_city} for this week: `, {});
-                    let d1 = `📅 Day 1: \n🌍 Average weather: ${json_data.daily[1].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[1].temp.day} \n💧 Average humidity: ${json_data.daily[1].humidity}`;
-                    let d2 = `\n\n📅 Day 2: \n🌍 Average weather: ${json_data.daily[2].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[2].temp.day} \n💧 Average humidity: ${json_data.daily[2].humidity}`;
-                    let d3 = `\n\n📅 Day 3: \n🌍 Average weather: ${json_data.daily[3].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[3].temp.day} \n💧 Average humidity: ${json_data.daily[3].humidity}`;
-                    let d4 = `\n\n📅 Day 4: \n🌍 Average weather: ${json_data.daily[4].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[4].temp.day} \n💧 Average humidity: ${json_data.daily[4].humidity}`;
-                    let d5 = `\n\n📅 Day 5: \n🌍 Average weather: ${json_data.daily[5].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[5].temp.day} \n💧 Average humidity: ${json_data.daily[5].humidity}`;
-                    let d6 = `\n\n📅 Day 6: \n🌍 Average weather: ${json_data.daily[6].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[6].temp.day} \n💧 Average humidity: ${json_data.daily[6].humidity}`;
-                    let d7 = `\n\n📅 Day 7: \n🌍 Average weather: ${json_data.daily[7].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[7].temp.day} \n💧 Average humidity: ${json_data.daily[7].humidity}`;
+                    const today = new Date(Date.now());
+                    let d1 = `📅 Day ${today.getDate() + 1}: \n🌍 Average weather: ${json_data.daily[1].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[1].temp.day} \n💧 Average humidity: ${json_data.daily[1].humidity}`;
+                    let d2 = `\n\n📅 Day ${today.getDate() + 2}: \n🌍 Average weather: ${json_data.daily[2].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[2].temp.day} \n💧 Average humidity: ${json_data.daily[2].humidity}`;
+                    let d3 = `\n\n📅 Day ${today.getDate() + 3}: \n🌍 Average weather: ${json_data.daily[3].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[3].temp.day} \n💧 Average humidity: ${json_data.daily[3].humidity}`;
+                    let d4 = `\n\n📅 Day ${today.getDate() + 4}: \n🌍 Average weather: ${json_data.daily[4].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[4].temp.day} \n💧 Average humidity: ${json_data.daily[4].humidity}`;
+                    let d5 = `\n\n📅 Day ${today.getDate() + 5}: \n🌍 Average weather: ${json_data.daily[5].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[5].temp.day} \n💧 Average humidity: ${json_data.daily[5].humidity}`;
+                    let d6 = `\n\n📅 Day ${today.getDate() + 6}: \n🌍 Average weather: ${json_data.daily[6].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[6].temp.day} \n💧 Average humidity: ${json_data.daily[6].humidity}`;
+                    let d7 = `\n\n📅 Day ${today.getDate() + 7}: \n🌍 Average weather: ${json_data.daily[7].weather[0].main} \n🌡️ Average temperature: ${json_data.daily[7].temp.day} \n💧 Average humidity: ${json_data.daily[7].humidity}`;
                     return bot.telegram.sendMessage(ctx.chat.id, d1+d2+d3+d4+d5+d6+d7, {
                         reply_markup: {
                             remove_keyboard: true
